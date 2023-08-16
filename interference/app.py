@@ -1,28 +1,52 @@
-import os
+import sys, os
 import time
 import json
 import random
-
-from g4f import Model, ChatCompletion, Provider
-from flask import Flask, request, Response
+from flask import Flask, request
 from flask_cors import CORS
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
+from g4f import ChatCompletion, Provider
+from config import app as conf_app, request as conf_req
 
 app = Flask(__name__)
 CORS(app)
+
+# working providers
+providers = {
+    'Acytoo': Provider.Acytoo,
+    'DeepAi': Provider.DeepAi,
+    'opchatgpts': Provider.opchatgpts,
+    'ChatgptAi': Provider.ChatgptAi,
+    'GetGpt': Provider.GetGpt,
+    'EasyChat': Provider.EasyChat,
+    'Ails': Provider.Ails,
+    'Aichat': Provider.Aichat,
+    'Yqcloud': Provider.Yqcloud,
+}
 
 @app.route("/chat/completions", methods=['POST'])
 def chat_completions():
     streaming = request.json.get('stream', False)
     model = request.json.get('model', 'gpt-3.5-turbo')
     messages = request.json.get('messages')
+    temperature = request.json.get('temperature', 0.5)
+    provider = providers.get(request.json.get('provider'))
+    os.environ['HTTPS_PROXY'] = os.environ['HTTP_PROXY'] = request.json.get('proxy', '')
+    if not provider:
+        provider = random.choice(list(providers.values()))
+    if model not in provider.model:
+        model = provider.model[0]
     
-    response = ChatCompletion.create(model=model, stream=streaming,
-                                     messages=messages)
+    try:
+        response = ChatCompletion.create(provider=provider, model=model, stream=streaming, messages=messages, temperature=temperature, timeout=conf_req['timeout'])
+    except Exception as e:
+        return {'error': str(e)}
     
     if not streaming:
-        while 'curl_cffi.requests.errors.RequestsError' in response:
-            response = ChatCompletion.create(model=model, stream=streaming,
-                                             messages=messages)
+        # while 'curl_cffi.requests.errors.RequestsError' in response:
+        #     response = ChatCompletion.create(model=model, stream=streaming,
+        #                                      messages=messages)
 
         completion_timestamp = int(time.time())
         completion_id = ''.join(random.choices(
@@ -78,9 +102,9 @@ def chat_completions():
 
 if __name__ == '__main__':
     config = {
-        'host': '0.0.0.0',
-        'port': 1337,
-        'debug': True
+        'host': conf_app['host'],
+        'port': conf_app['port'],
+        'debug': conf_app['debug'],
     }
 
     app.run(**config)
