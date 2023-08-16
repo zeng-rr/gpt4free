@@ -31,6 +31,7 @@ def chat_completions():
     model = request.json.get('model', 'gpt-3.5-turbo')
     messages = request.json.get('messages')
     temperature = request.json.get('temperature', 0.5)
+    top_p = request.json.get('top_p', 0.5)
     provider = providers.get(request.json.get('provider'))
     os.environ['HTTPS_PROXY'] = os.environ['HTTP_PROXY'] = request.json.get('proxy', '')
     if not provider:
@@ -39,7 +40,7 @@ def chat_completions():
         model = provider.model[0]
     
     try:
-        response = ChatCompletion.create(provider=provider, model=model, stream=streaming, messages=messages, temperature=temperature, timeout=conf_req['timeout'])
+        response = ChatCompletion.create(provider=provider, model=model, stream=streaming, messages=messages, temperature=temperature, timeout=conf_req['timeout'], top_p=top_p)
     except Exception as e:
         return {'error': str(e)}
     
