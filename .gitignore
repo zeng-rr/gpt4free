@@ -29,6 +29,7 @@ dist/
 *.egg-info
 build
 
+config.py
 test.py
 update.py
 cookie.json
