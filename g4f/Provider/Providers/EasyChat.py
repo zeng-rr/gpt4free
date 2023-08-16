@@ -48,7 +48,8 @@ def _create_completion(model: str, messages: list, stream: bool, **kwargs):
     req.get(f'{server}/')
 
     response = req.post(f'{server}/api/openai/v1/chat/completions',
-        headers=headers, json=json_data)
+        headers=headers, json=json_data, timeout=kwargs.get('timeout'))
+    response.raise_for_status()
     
     for chunk in response.iter_lines():
         if b'content' in chunk:

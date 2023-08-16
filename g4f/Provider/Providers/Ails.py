@@ -10,7 +10,7 @@ from ...typing import sha256, Dict, get_type_hints
 from datetime import datetime
 
 url: str = 'https://ai.ls'
-model: str = 'gpt-3.5-turbo'
+model: str = ['gpt-3.5-turbo']
 supports_stream = True
 needs_auth = False
 working =  True
@@ -82,7 +82,8 @@ def _create_completion(model: str, messages: list, stream: bool = False, tempera
          'messages': messages} | sig)
 
     response = requests.post('https://api.caipacity.com/v1/chat/completions', 
-                             headers=headers, data=json_data, stream=True)
+                             headers=headers, data=json_data, stream=True, timeout=kwargs.get('timeout'))
+    response.raise_for_status()
 
     for token in response.iter_lines():
         if b'content' in token:

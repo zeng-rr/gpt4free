@@ -15,7 +15,7 @@ def _create_completion(model: str, messages: list, stream: bool, **kwargs):
         chat += '%s: %s\n' % (message['role'], message['content'])
     chat += 'assistant: '
 
-    response = requests.get('https://chatgpt.ai/')
+    response = requests.get('https://chatgpt.ai/', timeout=kwargs.get('timeout'))
     nonce, post_id, _, bot_id = re.findall(r'data-nonce="(.*)"\n     data-post-id="(.*)"\n     data-url="(.*)"\n     data-bot-id="(.*)"\n     data-width', response.text)[0]
 
     headers = {
@@ -44,7 +44,8 @@ def _create_completion(model: str, messages: list, stream: bool, **kwargs):
     }
 
     response = requests.post('https://chatgpt.ai/wp-admin/admin-ajax.php', 
-                            headers=headers, data=data)
+                            headers=headers, data=data, timeout=kwargs.get('timeout'))
+    response.raise_for_status()
 
     yield (response.json()['data'])
 

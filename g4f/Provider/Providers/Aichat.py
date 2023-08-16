@@ -32,13 +32,16 @@ def _create_completion(model: str, messages: list, stream: bool, **kwargs):
 
     json_data = {
         'message':base,
-        'temperature': 1,
+        'temperature': kwargs.get('temperature', 0.5),
         'presence_penalty': 0,
-        'top_p': 1,
+        'top_p': kwargs.get('top_p', 1),
         'frequency_penalty': 0
     }
     
-    response = requests.post('https://chat-gpt.org/api/text', headers=headers, json=json_data)
+    response = requests.post('https://chat-gpt.org/api/text', headers=headers, json=json_data, timeout=kwargs.get('timeout'))
+    response.raise_for_status()
+    if not response.json()['response']:
+        raise Exception(response.json())
     yield response.json()['message']
 
 params = f'g4f.Providers.{os.path.basename(__file__)[:-3]} supports: ' + \

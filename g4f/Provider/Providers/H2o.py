@@ -19,15 +19,14 @@ models = {
 }
 
 def _create_completion(model: str, messages: list, stream: bool, **kwargs):
-    
+    timeout = kwargs.get('timeout')
     conversation = ''
     for message in messages:
         conversation += '%s: %s\n' % (message['role'], message['content'])
     
     conversation += 'assistant: '
     session = requests.Session()
-
-    response = session.get("https://gpt-gm.h2o.ai/")
+    response = session.get("https://gpt-gm.h2o.ai/", timeout=timeout)
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -47,7 +46,7 @@ def _create_completion(model: str, messages: list, stream: bool, **kwargs):
         "activeModel": "h2oai/h2ogpt-gm-oasst1-en-2048-falcon-40b-v1",
         "searchEnabled": "true"
     }
-    response = session.post("https://gpt-gm.h2o.ai/settings", headers=headers, data=data)
+    response = session.post("https://gpt-gm.h2o.ai/settings", headers=headers, data=data, timeout=timeout)
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
@@ -63,7 +62,7 @@ def _create_completion(model: str, messages: list, stream: bool, **kwargs):
         "model": models[model]
     }
     
-    conversation_id = session.post("https://gpt-gm.h2o.ai/conversation", headers=headers, json=data)
+    conversation_id = session.post("https://gpt-gm.h2o.ai/conversation", headers=headers, json=data, timeout=timeout)
     data = {
         "inputs": conversation,
         "parameters": {
@@ -84,7 +83,9 @@ def _create_completion(model: str, messages: list, stream: bool, **kwargs):
         }
     }
     
-    response = session.post(f"https://gpt-gm.h2o.ai/conversation/{conversation_id.json()['conversationId']}", headers=headers, json=data)
+    response = session.post(f"https://gpt-gm.h2o.ai/conversation/{conversation_id.json()['conversationId']}", headers=headers, json=data, timeout=timeout)
+    response.encoding = 'UTF-8'
+    response.raise_for_status()
     generated_text = response.text.replace("\n", "").split("data:")
     generated_text = json.loads(generated_text[-1])
     

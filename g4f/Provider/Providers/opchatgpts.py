@@ -8,7 +8,7 @@ supports_stream = False
 needs_auth = False
 working = True
 
-def _create_completion(model: str, messages: list, stream: bool = False, temperature: float = 0.8, max_tokens: int = 1024, system_prompt: str = "Converse as if you were an AI assistant. Be friendly, creative.", **kwargs):
+def _create_completion(model: str, messages: list, stream: bool = False, temperature: float = 0.8, max_tokens: int = 1024, system_prompt: str = "", **kwargs):
 
     data = {
         'env': 'chatbot',
@@ -29,8 +29,9 @@ def _create_completion(model: str, messages: list, stream: bool = False, tempera
         'stop': ''
     }
 
-    response = requests.post('https://opchatgpts.net/wp-json/ai-chatbot/v1/chat', json=data).json()
-
+    response = requests.post('https://opchatgpts.net/wp-json/ai-chatbot/v1/chat', json=data, timeout=kwargs.get('timeout'))
+    response.raise_for_status()
+    response = response.json()
     if response["success"]:
 
         return response["reply"] # `yield (response["reply"])` doesn't work

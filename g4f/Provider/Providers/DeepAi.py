@@ -53,18 +53,24 @@ def create_session():
     payload = {'uuid': js2py.eval_js(uuid4_js), "title":"", "chat_style": "chat", "messages": '[]'}
     headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"}
 
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.request("POST", url, headers=headers, data=payload, timeout=3)
     return response
 
 def _create_completion(model: str, messages:list, stream: bool = True, **kwargs):
     create_session()
     url = "https://api.deepai.org/make_me_a_pizza"
 
+    content = ''
+    for message in messages:
+        content += '%s: %s\n' % (message['role'], message['content'])
+    content += 'assistant: '
+    messages = [{'role': 'user', 'content': content}] # other role invalid
+
     payload = {'chas_style': "chat", "chatHistory": json.dumps(messages)}
     api_key = js2py.eval_js(token_js)
     headers = {"api-key": api_key, "User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"}
 
-    response = requests.request("POST", url, headers=headers, data=payload, stream=True)
+    response = requests.request("POST", url, headers=headers, data=payload, stream=True, timeout=kwargs.get('timeout'))
     for chunk in response.iter_content(chunk_size=None):
         response.raise_for_status()
         yield chunk.decode()

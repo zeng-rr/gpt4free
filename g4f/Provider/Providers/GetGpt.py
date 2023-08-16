@@ -46,7 +46,8 @@ def _create_completion(model: str, messages: list, stream: bool, **kwargs):
     })
 
     res = requests.post('https://chat.getgpt.world/api/chat/stream', 
-                        headers=headers, json={'signature': encrypt(data)}, stream=True)
+                        headers=headers, json={'signature': encrypt(data)}, stream=True, timeout=kwargs.get('timeout'))
+    res.raise_for_status()
 
     for line in res.iter_lines():
         if b'content' in line:
