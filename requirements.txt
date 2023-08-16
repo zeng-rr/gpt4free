@@ -7,3 +7,5 @@ browser_cookie3
 websockets
 pyexecjs
 js2py
+flask
+flask_cors
