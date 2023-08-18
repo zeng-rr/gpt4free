@@ -33,6 +33,7 @@ def chat_completions():
     temperature = request.json.get('temperature', 0.5)
     top_p = request.json.get('top_p', 0.5)
     provider = providers.get(request.json.get('provider'))
+    timeout = request.json.get('timeout', conf_req['timeout'])
     os.environ['HTTPS_PROXY'] = os.environ['HTTP_PROXY'] = request.json.get('proxy', '')
     if not provider:
         provider = random.choice(list(providers.values()))
@@ -40,7 +41,7 @@ def chat_completions():
         model = provider.model[0]
     
     try:
-        response = ChatCompletion.create(provider=provider, model=model, stream=streaming, messages=messages, temperature=temperature, timeout=conf_req['timeout'], top_p=top_p)
+        response = ChatCompletion.create(provider=provider, model=model, stream=streaming, messages=messages, temperature=temperature, timeout=timeout, top_p=top_p)
     except Exception as e:
         return {'error': str(e)}
     

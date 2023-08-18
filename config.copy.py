@@ -5,5 +5,5 @@ app = {
 }
 
 request = {
-    'timeout': (3, 55)
+    'timeout': 60
 }

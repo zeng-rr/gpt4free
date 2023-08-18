@@ -89,6 +89,9 @@ def _create_completion(model: str, messages: list, stream: bool = False, tempera
         if b'content' in token:
             completion_chunk = json.loads(token.decode().replace('data: ', ''))
             token = completion_chunk['choices'][0]['delta'].get('content')
+            data = json.loads(token)
+            if data and 'error' in data:
+                raise Exception(data)
             if token != None:
                 yield token
 
