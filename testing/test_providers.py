@@ -1,3 +1,4 @@
+import random, string
 import sys
 from pathlib import Path
 
@@ -38,7 +39,7 @@ def get_providers() -> list[type[BaseProvider]]:
     return [getattr(Provider, provider_name) for provider_name in provider_names]
 
 
-def create_response(_provider: type[BaseProvider]) -> str:
+def create_response(_provider: type[BaseProvider], _str: str) -> str:
     model = (
         models.gpt_35_turbo.name
         if _provider is not Provider.H2o
@@ -46,7 +47,7 @@ def create_response(_provider: type[BaseProvider]) -> str:
     )
     response = _provider.create_completion(
         model=model,
-        messages=[{"role": "user", "content": "Hello world!, plz yourself"}],
+        messages=[{"role": "user", "content": f"just output \"{_str}\""}],
         stream=False,
     )
     return "".join(response)
@@ -57,11 +58,12 @@ def judge(_provider: type[BaseProvider]) -> bool:
         return _provider.working
 
     try:
-        response = create_response(_provider)
+        _str = "".join(random.choices(string.ascii_letters + string.digits, k=4))
+        response = create_response(_provider, _str)
         assert type(response) is str
-        return len(response) > 1
+        return len(response) > 1 and _str in response
     except Exception as e:
-        print(e)
+        print(f"{_provider.__name__}: {str(e)}")
         return False
 
 
