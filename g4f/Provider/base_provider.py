@@ -42,8 +42,8 @@ def get_cookies(cookie_domain: str) -> dict:
     if cookie_domain not in _cookies:
         _cookies[cookie_domain] = {}
         
-        for cookie in browser_cookie3.load(cookie_domain):
-            _cookies[cookie_domain][cookie.name] = cookie.value
+        # for cookie in browser_cookie3.load(cookie_domain):
+        #     _cookies[cookie_domain][cookie.name] = cookie.value
     
     return _cookies[cookie_domain]
 
