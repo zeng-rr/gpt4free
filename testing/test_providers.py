@@ -1,7 +1,6 @@
 import random, string
 import sys
 from pathlib import Path
-from colorama import Fore
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -25,11 +24,11 @@ def main():
     print()
 
     if failed_providers:
-        print(f"{Fore.RED}Failed providers:\n")
+        print(f"Failed providers:\n")
         for _provider in failed_providers:
-            print(f"{Fore.RED}{_provider.__name__}")
+            print(f"{_provider.__name__}")
     else:
-        print(f"{Fore.GREEN}All providers are working")
+        print(f"All providers are working")
 
 
 def get_providers() -> list[type[BaseProvider]]:
