@@ -119,11 +119,10 @@ def check_providers():
             print("start check ", _provider.__name__)
             for _ in range(times):
                 os.environ['HTTPS_PROXY'] = os.environ['HTTP_PROXY'] = random.choice(proxies) if proxies else ""
-                if test_providers.judge(_provider):
+                if test_providers.test(_provider):
                     results.append(_provider.__name__)
                     break
     
-        _tList: list[threading.Thread] = []
         for _provider in providers:
             _t = threading.Thread(target=check_provider, args=(_provider,), daemon=True)
             _t.start()

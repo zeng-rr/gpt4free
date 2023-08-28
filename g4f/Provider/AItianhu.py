@@ -7,7 +7,7 @@ from .base_provider import BaseProvider
 
 
 class AItianhu(BaseProvider):
-    url = "https://www.aitianhu.com/api/chat-process"
+    url = "https://www.aitianhu.com/"
     working = False
     supports_gpt_35_turbo = True
 
@@ -15,9 +15,8 @@ class AItianhu(BaseProvider):
     def create_completion(
         model: str,
         messages: list[dict[str, str]],
-        stream: bool,
-        **kwargs: Any,
-    ) -> CreateResult:
+        stream: bool, **kwargs: Any) -> CreateResult:
+        
         base = ""
         for message in messages:
             base += "%s: %s\n" % (message["role"], message["content"])
