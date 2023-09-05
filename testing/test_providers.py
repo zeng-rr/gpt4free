@@ -6,7 +6,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from g4f import BaseProvider, models, Provider
 
-logging = False
+logging = True
 
 def main():
     providers = get_providers()

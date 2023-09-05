@@ -15,17 +15,29 @@ class Bing(AsyncGeneratorProvider):
     def create_async_generator(
             model: str,
             messages: list[dict[str, str]],
-            cookies: dict = get_cookies(".bing.com"), **kwargs) -> AsyncGenerator:
+            cookies: dict = None, **kwargs) -> AsyncGenerator:
         
+        if not cookies:
+            cookies = get_cookies(".bing.com")
         if len(messages) < 2:
             prompt = messages[0]["content"]
             context = None
-
         else:
             prompt = messages[-1]["content"]
             context = create_context(messages[:-1])
-
-        return stream_generate(prompt, context, cookies)
+        
+        if cookies and "SRCHD" in cookies:
+            #TODO: Will implement proper cookie retrieval later and use a try-except mechanism in 'stream_generate' instead of defaulting the cookie value like this
+            cookies_dict = {
+                'SRCHD'         : cookies["SRCHD"],
+                'PPLState'      : '1',
+                'KievRPSSecAuth': '',
+                'SUID'          : '',
+                'SRCHUSR'       : '',
+                'SRCHHPGUSR'    : '',
+            }
+        
+        return stream_generate(prompt, context, cookies_dict)
 
 def create_context(messages: list[dict[str, str]]):
     context = ""
@@ -152,32 +164,34 @@ class Defaults:
         'x-forwarded-for': ip_address,
     }
 
-    optionsSets = [
-        'saharasugg',
-        'enablenewsfc',
-        'clgalileo',
-        'gencontentv3',
-        "nlu_direct_response_filter",
-        "deepleo",
-        "disable_emoji_spoken_text",
-        "responsible_ai_policy_235",
-        "enablemm",
-        "h3precise"
-        "dtappid",
-        "cricinfo",
-        "cricinfov2",
-        "dv3sugg",
-        "nojbfedge"
-    ]
+    optionsSets = {
+        "optionsSets": [
+            'saharasugg',
+            'enablenewsfc',
+            'clgalileo',
+            'gencontentv3',
+            "nlu_direct_response_filter",
+            "deepleo",
+            "disable_emoji_spoken_text",
+            "responsible_ai_policy_235",
+            "enablemm",
+            "h3precise"
+            "dtappid",
+            "cricinfo",
+            "cricinfov2",
+            "dv3sugg",
+            "nojbfedge"
+        ]
+    }
 
-def format_message(message: dict) -> str:
-    return json.dumps(message, ensure_ascii=False) + Defaults.delimiter
+def format_message(msg: dict) -> str:
+    return json.dumps(msg, ensure_ascii=False) + Defaults.delimiter
 
 def create_message(conversation: Conversation, prompt: str, context: str=None) -> str:
     struct = {
         'arguments': [
             {
-                'optionsSets': Defaults.optionsSets,
+                **Defaults.optionsSets,
                 'source': 'cib',
                 'allowedMessageTypes': Defaults.allowedMessageTypes,
                 'sliceIds': Defaults.sliceIds,
@@ -257,10 +271,6 @@ async def stream_generate(
                                     response_txt += inline_txt + '\n'
                                     result_text += inline_txt + '\n'
 
-                            if returned_text.endswith('   '):
-                                final = True
-                                break
-
                             if response_txt.startswith(returned_text):
                                 new = response_txt[len(returned_text):]
                                 if new != "\n":
@@ -285,3 +295,4 @@ def run(generator: AsyncGenerator[Union[Any, str], Any]):
 
         except StopAsyncIteration:
             break
+
