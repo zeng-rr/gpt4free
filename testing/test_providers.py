@@ -1,3 +1,4 @@
+import os
 import random, string
 import sys
 from pathlib import Path
@@ -34,30 +35,32 @@ def main():
 def get_providers() -> list[type[BaseProvider]]:
     provider_names = dir(Provider)
     ignore_names = [
+        "annotations",
         "base_provider",
-        "BaseProvider"
+        "BaseProvider",
+        "AsyncProvider",
+        "AsyncGeneratorProvider"
     ]
     provider_names = [
         provider_name
         for provider_name in provider_names
         if not provider_name.startswith("__") and provider_name not in ignore_names
     ]
-    return [getattr(Provider, provider_name) for provider_name in sorted(provider_names)]
+    return [getattr(Provider, provider_name) for provider_name in provider_names]
 
 
 def create_response(_provider: type[BaseProvider], _str: str) -> str:
     if _provider.supports_gpt_35_turbo:
         model = models.gpt_35_turbo.name    
     elif _provider.supports_gpt_4:
-        model = models.gpt_4
-    elif hasattr(_provider, "model"):
-        model = _provider.model
+        model = models.gpt_4.name
     else:
-        model = None
+        model = models.default.name
     response = _provider.create_completion(
         model=model,
         messages=[{"role": "user", "content": f"just output \"{_str}\""}],
         stream=False,
+        proxy=os.environ['HTTP_PROXY']
     )
     return "".join(response)
 
