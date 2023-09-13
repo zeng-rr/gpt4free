@@ -26,7 +26,7 @@ def chat_completions():
     top_p = request.json.get('top_p', 0.5)
     provider = request.json.get('provider')
     timeout = request.json.get('timeout', conf_req['timeout'])
-    proxy = request.json.get('proxy', None)
+    proxy = request.json.get('proxy', '')
     os.environ['HTTPS_PROXY'] = os.environ['HTTP_PROXY'] = proxy
     
     try:
